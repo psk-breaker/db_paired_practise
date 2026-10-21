@@ -46,10 +46,10 @@ Define the attributes of your Model class. You can usually map the table columns
 # (in lib/student.py)
 
 class Book:
-    def __init__(self, id = 0, title, author):
+    def __init__(self, title, author, id = 0):
         self.id = id
         self.title = title
-        self.author = title
+        self.author = author
 ```
 
 ## 5. Define the Repository Class interface
