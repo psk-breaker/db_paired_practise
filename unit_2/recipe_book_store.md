@@ -1,71 +1,36 @@
 # {{TABLE NAME}} Model and Repository Classes Design Recipe
 
-_Copy this recipe template to design and implement Model and Repository classes for a database table._
+
+As a user 
+I want to be able to see a books title and author
+
+As a user
+I want to list all the books of the books table 
+to see the titles and the authors
 
 ## 1. Design and create the Table
 
-If the table is already created in the database, you can skip this step.
+Already designed in the seeds
 
-Otherwise, [follow this recipe to design and create the SQL schema for your table](https://journey.makers.tech/pages/single-table-design-recipe-template).
-
-*In this template, we'll use an example table `students`*
-
-```
-# EXAMPLE
-
-Table: students
-
-Columns:
-id | name | cohort_name
-```
 
 ## 2. Create Test SQL seeds
 
-Your tests will depend on data stored in PostgreSQL to run.
-
-If seed data is provided (or you already created it), you can skip this step.
-
-```sql
--- EXAMPLE
--- (file: spec/seeds_{table_name}.sql)
-
--- Write your SQL seed here. 
-
--- First, you'd need to truncate the table - this is so our table is emptied between each test run,
--- so we can start with a fresh state.
--- (RESTART IDENTITY resets the primary key)
-
-TRUNCATE TABLE students RESTART IDENTITY; -- replace with your own table name.
-
--- Below this line there should only be `INSERT` statements.
--- Replace these statements with your own seed data.
-
-INSERT INTO students (name, cohort_name) VALUES ('David', 'April 2022');
-INSERT INTO students (name, cohort_name) VALUES ('Anna', 'May 2022');
-```
-
-Run this SQL file on the database to truncate (empty) the table, and insert the seed data. Be mindful of the fact any existing records in the table will be deleted.
-
-```bash
-psql -h 127.0.0.1 your_database_name < seeds_{table_name}.sql
-```
+Already done in the seeds
 
 ## 3. Define the class names
 
 Usually, the Model class name will be the capitalised table name (single instead of plural). The same name is then suffixed by `Repository` for the Repository class name.
 
 ```python
-# EXAMPLE
-# Table name: students
 
-# Model class
-# (in lib/student.py)
-class Student
+# Table name: books
 
 
-# Repository class
-# (in lib/student_repository.py)
-class StudentRepository
+class Book:
+    pass
+
+class BookRepository
+pass
 
 ```
 
@@ -80,33 +45,14 @@ Define the attributes of your Model class. You can usually map the table columns
 # Model class
 # (in lib/student.py)
 
-class Student:
-    def __init__(self):
-        self.id = 0
-        self.name = ""
-        self.cohort_name = ""
-
-        # Replace the attributes by your own columns.
-
-
-# We can set the attributes to default empty values and set them later,
-# here's an example:
-#
-# >>> student = Student()
-# >>> student.name = "Will"
-# >>> student.cohort_name = "September Devs"
-# >>> student.name
-# 'Will'
-# >>> student.cohort_name
-# 'September Devs'
-
+class Book:
+    def __init__(self, id = 0, title, author):
+        self.id = id
+        self.title = title
+        self.author = title
 ```
 
 ## 5. Define the Repository Class interface
-
-Your Repository class will need to implement methods for each "read" or "write" operation you'd like to run against the database.
-
-Using comments, define the method signatures (arguments and return value) and what they do - write up the SQL queries that will be used by each method.
 
 ```python
 # EXAMPLE
@@ -115,34 +61,19 @@ Using comments, define the method signatures (arguments and return value) and wh
 # Repository class
 # (in lib/student_repository.py)
 
-class StudentRepository():
+class BookRepository():
 
-    # Selecting all records
-    # No arguments
+    def __init__(self, connection):
+        self._connection = connection
+
+
     def all():
-        # Executes the SQL query:
-        # SELECT id, name, cohort_name FROM students;
-
-        # Returns an array of Student objects.
-
-        # Gets a single record by its ID
-        # One argument: the id (number)
-    def find(id):
-        # Executes the SQL query:
-        # SELECT id, name, cohort_name FROM students WHERE id = $1;
-
-        # Returns a single Student object.
-
-        # Add more methods below for each operation you'd like to implement.
-
-    # def create(student)
-    # 
-
-    # def update(student)
-    # 
-
-    # def delete(student)
-    # 
+        # Parameters:
+        #   None
+        # Side-Effects:
+        #   None
+        # Returns:
+        #   Returns an array of Student objects.
 
 ```
 
@@ -153,42 +84,58 @@ Write Python code that defines the expected behaviour of the Repository class, f
 These examples will later be encoded as Pytest tests.
 
 ```python
-# EXAMPLES
 
-# 1
-# Get all students
-
-repo = StudentRepository()
-
-students = repo.all()
-
-len(students) # =>  2
-
-students[0].id # =>  1
-students[0].name # =>  'David'
-students[0].cohort_name # =>  'April 2022'
-
-students[1].id # =>  2
-students[1].name # =>  'Anna'
-students[1].cohort_name # =>  'May 2022'
-
-# 2
-# Get a single student
-
-repo = StudentRepository()
-
-student = repo.find(1)
-
-student.id # =>  1
-student.name # =>  'David'
-student.cohort_name # =>  'April 2022'
-
-# Add more examples for each method
 ```
+test create book
+constructs fields
+```
+def test_create_books_constructs_fields():
+    book = Book('Emma', 'Jane Austin')
+    assert book.id == 0
+    assert book.title == 'Emma'
+    assert book.author = 'Jane Austin'
 
-Encode this example as a test.
+```
+test given 2 identical books
+that they are equal to each
+'''
+def test_books_Are_identical():
+    book1 = Book('Emma', 'Jane Austin')
+    book2 = Book('Emma', 'Jane Austin')
+
+    assert book1 == book2
+
+'''
+test given a book
+it returns a string nicely formatted
+'''
+def test_book_has_nice_string_format():
+    book = Book('Emma', 'Jane Austin')
+    assert str(book) == 'Book(0, Emma, Jane Austin)'
+
+'''
+given a book repo
+test that a connection is stored
+'''
+def test_book_repo_can_store_a_connection(db_connection):
+    db_connection.seed('seeds/book_store.sql')
+    repo = BookRepository(db_connection)
+    assert repo._connection == db_connection
 
 
-## 7. Test-drive and implement the Repository class behaviour
+'''
+given a repo full of books
+we can see the full list of titles and authors
+'''
+def test_repo_can_return_all_title_and_author(db_connection):
+    db_connection.seed('seeds/book_store.sql')
+    repo = BookRepository(db_connection)
 
-_After each test you write, follow the test-driving process of red, green, refactor to implement the behaviour._
+    assert repo.all() == [
+        Book(1, 'Nineteen-Eighty-Four', 'George Orwell'),
+        Book(2, 'Mrs Dalloway', 'Virginia Woolf'),
+        Book(3, 'Emma', 'Jane Austen'),
+        Book(4, 'Dracula', 'Bram Stoker'),
+        Book(5, 'The Age of Innocence', 'Edith Wharton')
+    ]
+
